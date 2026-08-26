@@ -1,23 +1,24 @@
 import express from "express";
 import globalErrorHandler from "./app/middlewares/globalErrorHandler.js";
 
+
+import authRouter from "./app/modules/auth/auth.route.js"
 const app = express();
 
 app.use(express.json());
 
-app.get("/", (_req, res) => {
+app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
-    message: "POS Server is running",
+    message: "POS server is running",
   });
 });
 
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: "Route not found",
-  });
-});
+app.use(
+  "/api/auth",
+  authRouter
+);
+
 app.use(globalErrorHandler);
 
 export default app;
