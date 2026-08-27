@@ -1,5 +1,13 @@
-import mongoose, { Schema } from "mongoose";
-import type { IUser } from "./user.interface.js";
+import {
+  Schema,
+  model,
+} from "mongoose";
+
+import type {
+  IUser,
+  UserRole,
+  UserStatus,
+} from "./user.interface.js";
 
 const userSchema = new Schema<IUser>(
   {
@@ -7,6 +15,8 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: true,
       trim: true,
+      minlength: 2,
+      maxlength: 50,
     },
 
     email: {
@@ -21,17 +31,24 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: true,
       minlength: 6,
+      select: false,
     },
 
     role: {
       type: String,
-      enum: ["OWNER", "EMPLOYEE"],
-      default: "EMPLOYEE",
+      enum: [
+        "OWNER",
+        "EMPLOYEE",
+      ] satisfies UserRole[],
+      default: "OWNER",
     },
 
     status: {
       type: String,
-      enum: ["ACTIVE", "INACTIVE"],
+      enum: [
+        "ACTIVE",
+        "INACTIVE",
+      ] satisfies UserStatus[],
       default: "ACTIVE",
     },
   },
@@ -40,4 +57,7 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-export const User = mongoose.model<IUser>("User", userSchema);
+export const User = model<IUser>(
+  "User",
+  userSchema
+);

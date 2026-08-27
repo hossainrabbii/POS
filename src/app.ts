@@ -1,11 +1,12 @@
 import express from "express";
 import globalErrorHandler from "./app/middlewares/globalErrorHandler.js";
-
-
-import authRouter from "./app/modules/auth/auth.route.js"
+import router from "./app/routes/index.js";
 const app = express();
 
+
 app.use(express.json());
+
+app.use("/api/v1", router);
 
 app.get("/", (req, res) => {
   res.status(200).json({
@@ -14,10 +15,6 @@ app.get("/", (req, res) => {
   });
 });
 
-app.use(
-  "/api/auth",
-  authRouter
-);
 
 app.use(globalErrorHandler);
 

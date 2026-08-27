@@ -1,16 +1,16 @@
-import jwt from "jsonwebtoken";
-
 import type {
   NextFunction,
   Request,
   Response,
 } from "express";
-import appConfig from "../appConfig/index.js";
 
+import jwt from "jsonwebtoken";
+
+import appConfig from "../appConfig/index.js";
 
 export interface AuthenticatedRequest
   extends Request {
-  userId?: string;
+  userId?: string | undefined;
 }
 
 const authMiddleware = (
@@ -18,39 +18,42 @@ const authMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
+  const authorization =
+    req.headers.authorization;
+
+  if (!authorization) {
+    return res.status(401).json({
+      success: false,
+      message:
+        "No authorization header provided",
+    });
+  }
+
+  const [type, token] =
+    authorization.split(" ");
+
+  if (
+    type !== "Bearer" ||
+    !token
+  ) {
+    return res.status(401).json({
+      success: false,
+      message:
+        "Invalid authorization format",
+    });
+  }
+
   try {
-    const authorization =
-      req.headers.authorization;
+    const decoded =
+      jwt.verify(
+        token,
+        appConfig.access_token_secret
+      ) as {
+        userId: string;
+      };
 
-    if (!authorization) {
-      return res.status(401).json({
-        success: false,
-        message: "Authentication required",
-      });
-    }
-
-    const [type, token] =
-      authorization.split(" ");
-
-    if (
-      type !== "Bearer" ||
-      !token
-    ) {
-      return res.status(401).json({
-        success: false,
-        message:
-          "Invalid authorization format",
-      });
-    }
-
-    const decoded = jwt.verify(
-      token,
-      appConfig.access_token_secret as string
-    ) as {
-      userId: string;
-    };
-
-    req.userId = decoded.userId;
+    req.userId =
+      decoded.userId;
 
     next();
   } catch {
