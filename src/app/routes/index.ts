@@ -1,12 +1,22 @@
 import { Router } from 'express';
-import authRouter from "../modules/auth/auth.route.js"
-
+import authRoutes from "../modules/auth/auth.route.js"
+import categoryRoutes from "../modules/category/category.route.js";
+import productRoutes from "../modules/product/product.route.js";
 const router = Router();
 const moduleRoutes = [
    {
       path: '/auth',
-      route: authRouter,
+      route: authRoutes,
    },
+   {
+      path: '/categories',
+      route: categoryRoutes,
+   },
+   {
+      path: '/products',
+      route: productRoutes,
+   },
+  
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
