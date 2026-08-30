@@ -175,11 +175,21 @@ export const logout =
 // ME
 // ======================================================
 
+
 export const getMe =
   async (
     req: AuthenticatedRequest,
     res: Response
   ) => {
+
+    if (!req.userId) {
+      return res.status(401).json({
+        success: false,
+        message:
+          "Unauthorized",
+      });
+    }
+
     res.status(200).json({
       success: true,
 
@@ -189,10 +199,12 @@ export const getMe =
       data: {
         userId:
           req.userId,
+
+        role:
+          req.role,
       },
     });
   };
-
 
 // ======================================================
 // FORGOT PASSWORD

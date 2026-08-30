@@ -14,6 +14,7 @@ import type {
   ILoginPayload,
   IRegisterPayload,
 } from "./auth.interface.js";
+import type { IUserRole } from "../user/user.interface.js";
 
 
 // ======================================================
@@ -49,11 +50,13 @@ const getOtpExpirationDate =
 // ======================================================
 
 const createAccessToken = (
-  userId: string
+  userId: string,
+  role: IUserRole
 ): string => {
   return jwt.sign(
     {
       userId,
+      role,
     },
 
     appConfig.access_token_secret,
@@ -66,7 +69,6 @@ const createAccessToken = (
     }
   );
 };
-
 const createRefreshToken = (
   userId: string
 ): string => {
@@ -425,7 +427,7 @@ export const loginUser = async (
 
   const accessToken =
     createAccessToken(
-      user._id.toString()
+      user._id.toString(), user.role
     );
 
   const refreshToken =
@@ -537,7 +539,7 @@ export const refreshAccessToken =
 
     const accessToken =
       createAccessToken(
-        user._id.toString()
+        user._id.toString(), user.role
       );
 
     return {
@@ -580,7 +582,6 @@ export const forgotPassword =
           "If an account exists with this email, a password reset OTP has been sent.",
       };
     }
-
     const otp =
       generateOtp();
 
@@ -590,49 +591,37 @@ export const forgotPassword =
     await Otp.findOneAndUpdate(
       {
         email,
-
         purpose:
           "PASSWORD_RESET",
       },
 
       {
         email,
-
         otpHash,
-
         purpose:
           "PASSWORD_RESET",
-
-        expiresAt:
-          getOtpExpirationDate(),
-
+        expiresAt:getOtpExpirationDate(),
         attempts: 0,
       },
 
       {
         upsert: true,
-
         new: true,
       }
     );
 
     await sendEmail({
       to: email,
-
       subject:
         "POS password reset code",
-
       text:
         `Your password reset code is ${otp}. ` +
         `This code will expire in 10 minutes.`,
 
       html: `
         <h2>Password Reset</h2>
-
         <p>Your password reset code is:</p>
-
         <h1>${otp}</h1>
-
         <p>
           This code will expire in 10 minutes.
         </p>

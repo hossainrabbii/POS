@@ -1,35 +1,37 @@
-// export type UserRole = "OWNER" | "EMPLOYEE";
+import type { Document } from "mongoose";
 
-// export type UserStatus = "ACTIVE" | "INACTIVE";
+// ======================================================
+// USER ROLE
+// ======================================================
 
-// export interface IUser {
-//   name: string;
-//   email: string;
-//   password: string;
-//   role: UserRole;
-//   status: UserStatus;
+export type IUserRole = "OWNER" | "EMPLOYEE";
 
-//   passwordResetToken?: string | undefined;
-//   passwordResetExpires?: Date | undefined;
-// }
+// ======================================================
+// USER STATUS
+// ======================================================
 
+export type IUserStatus = "ACTIVE" | "INACTIVE";
 
-export type UserRole =
-  | "OWNER"
-  | "EMPLOYEE";
+// ======================================================
+// USER
+// ======================================================
 
-export type UserStatus =
-  | "ACTIVE"
-  | "INACTIVE";
-
-export interface IUser {
+export interface IUser extends Document {
   name: string;
 
   email: string;
 
   password: string;
 
-  role: UserRole;
+  role: IUserRole;
 
-  status: UserStatus;
+  status: IUserStatus;
+
+  passwordResetToken?: string;
+
+  passwordResetExpires?: Date;
+
+  createdAt?: Date;
+
+  updatedAt?: Date;
 }

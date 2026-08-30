@@ -1,39 +1,57 @@
+import type {
+  IUserRole,
+} from "../user/user.interface.js";
+
+
+// ======================================================
+// REGISTER
+// ======================================================
+
 export interface IRegisterPayload {
   name: string;
-
   email: string;
-
   password: string;
 }
 
-export interface IVerifyEmailPayload {
-  email: string;
 
-  otp: string;
-}
+// ======================================================
+// LOGIN
+// ======================================================
 
 export interface ILoginPayload {
   email: string;
-
   password: string;
+}
+
+
+// ======================================================
+// JWT PAYLOAD
+// ======================================================
+
+export interface IAccessTokenPayload {
+  userId: string;
+  role: IUserRole;
 }
 
 export interface IRefreshTokenPayload {
+  userId: string;
+}
+
+
+// ======================================================
+// AUTH RESPONSE
+// ======================================================
+
+export interface IAuthResponse {
+  accessToken: string;
+
   refreshToken: string;
-}
 
-export interface IForgotPasswordPayload {
-  email: string;
-}
-
-export interface IVerifyResetOtpPayload {
-  email: string;
-
-  otp: string;
-}
-
-export interface IResetPasswordPayload {
-  resetToken: string;
-
-  password: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: IUserRole;
+    status: string;
+  };
 }
