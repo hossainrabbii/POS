@@ -4,7 +4,7 @@ const globalErrorHandler = (
   error: Error,
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   console.error(error);
 

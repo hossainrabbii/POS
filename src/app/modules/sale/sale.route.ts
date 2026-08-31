@@ -1,9 +1,6 @@
-import {
-  Router,
-} from "express";
+import { Router } from "express";
 
-import authMiddleware
-  from "../../middlewares/authMiddleware.js";
+import authMiddleware from "../../middlewares/authMiddleware.js";
 
 import {
   createSaleController,
@@ -13,56 +10,35 @@ import {
   getSalesStatisticsController,
 } from "./sale.controller.js";
 
-
-const router =
-  Router();
-
+const router = Router();
 
 // ======================================================
 // CREATE SALE
 // ======================================================
 
-router.post("/",authMiddleware,createSaleController);
-
+router.post("/", authMiddleware, createSaleController);
 
 // ======================================================
 // RECEIVE DUE PAYMENT
 // ======================================================
 
-router.post(
-  "/:saleId/payment",
-
-  authMiddleware,
-  addSalePaymentController
-);
+router.post("/:saleId/payment", authMiddleware, addSalePaymentController);
 
 // ======================================================
 // GET ALL SALES
 // ======================================================
 
-router.get(
-  "/",
-  authMiddleware,
-  getAllSalesController
-);
+router.get("/", authMiddleware, getAllSalesController);
 
 // ======================================================
 // GET SALES STATISTICS
 // ======================================================
 
-router.get(
-  "/statistics",
-  authMiddleware,
-  getSalesStatisticsController
-);
+router.get("/statistics", authMiddleware, getSalesStatisticsController);
 
 // ======================================================
 // GET SINGLE SALE
 // ======================================================
 
-router.get(
-  "/:saleId",
-  authMiddleware,
-  getSaleByIdController
-);
+router.get("/:saleId", authMiddleware, getSaleByIdController);
 export default router;

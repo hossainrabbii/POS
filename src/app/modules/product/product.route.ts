@@ -10,68 +10,42 @@ import {
   updateProductController,
 } from "./product.controller.js";
 
-
-const router =
-  Router();
-
+const router = Router();
 
 // ======================================================
 // ALL PRODUCT ROUTES REQUIRE VALID ACCESS TOKEN
 // ======================================================
 
-router.use(
-  authMiddleware
-);
-
+router.use(authMiddleware);
 
 // ======================================================
 // CREATE
 // ======================================================
 
-router.post(
-  "/",
-  createProductController
-);
-
+router.post("/", createProductController);
 
 // ======================================================
 // GET ALL
 // ======================================================
 
-router.get(
-  "/",
-  getAllProductsController
-);
-
+router.get("/", getAllProductsController);
 
 // ======================================================
 // GET SINGLE
 // ======================================================
 
-router.get(
-  "/:id",
-  getProductByIdController
-);
-
+router.get("/:id", getProductByIdController);
 
 // ======================================================
 // UPDATE
 // ======================================================
 
-router.patch(
-  "/:id",
-  updateProductController
-);
-
+router.patch("/:id", updateProductController);
 
 // ======================================================
 // DELETE / DEACTIVATE
 // ======================================================
 
-router.delete(
-  "/:id",
-  deleteProductController
-);
-
+router.delete("/:id", deleteProductController);
 
 export default router;

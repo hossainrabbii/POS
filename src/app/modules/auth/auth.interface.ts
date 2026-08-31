@@ -1,7 +1,4 @@
-import type {
-  IUserRole,
-} from "../user/user.interface.js";
-
+import type { IUserRole } from "../user/user.interface.js";
 
 // ======================================================
 // REGISTER
@@ -13,7 +10,6 @@ export interface IRegisterPayload {
   password: string;
 }
 
-
 // ======================================================
 // LOGIN
 // ======================================================
@@ -22,7 +18,6 @@ export interface ILoginPayload {
   email: string;
   password: string;
 }
-
 
 // ======================================================
 // JWT PAYLOAD
@@ -36,7 +31,6 @@ export interface IAccessTokenPayload {
 export interface IRefreshTokenPayload {
   userId: string;
 }
-
 
 // ======================================================
 // AUTH RESPONSE

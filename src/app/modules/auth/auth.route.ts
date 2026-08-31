@@ -14,66 +14,30 @@ import {
   verifyResetOtpController,
 } from "./auth.controller.js";
 
-const router =
-  Router();
-
+const router = Router();
 
 // Registration
-router.post(
-  "/register",
-  register
-);
+router.post("/register", register);
 
-router.post(
-  "/verify-email",
-  verifyEmailController
-);
-
+router.post("/verify-email", verifyEmailController);
 
 // Login
-router.post(
-  "/login",
-  login
-);
-
+router.post("/login", login);
 
 // Refresh token
-router.post(
-  "/refresh-token",
-  refreshToken
-);
-
+router.post("/refresh-token", refreshToken);
 
 // Logout
-router.post(
-  "/logout",
-  logout
-);
-
+router.post("/logout", logout);
 
 // Protected route
-router.get(
-  "/me",
-  authMiddleware,
-  getMe
-);
-
+router.get("/me", authMiddleware, getMe);
 
 // Password reset
-router.post(
-  "/forgot-password",
-  forgotPasswordController
-);
+router.post("/forgot-password", forgotPasswordController);
 
-router.post(
-  "/verify-reset-otp",
-  verifyResetOtpController
-);
+router.post("/verify-reset-otp", verifyResetOtpController);
 
-router.post(
-  "/reset-password",
-  resetPasswordController
-);
-
+router.post("/reset-password", resetPasswordController);
 
 export default router;

@@ -18,20 +18,12 @@ export type IUserStatus = "ACTIVE" | "INACTIVE";
 
 export interface IUser extends Document {
   name: string;
-
   email: string;
-
   password: string;
-
   role: IUserRole;
-
   status: IUserStatus;
-
   passwordResetToken?: string;
-
   passwordResetExpires?: Date;
-
   createdAt?: Date;
-
   updatedAt?: Date;
 }

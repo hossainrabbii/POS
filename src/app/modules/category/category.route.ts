@@ -10,50 +10,26 @@ import {
   updateCategoryController,
 } from "./category.controller.js";
 
-const router =
-  Router();
+const router = Router();
 
 // Every category route requires
 // a valid access token.
 
-router.use(
-  authMiddleware
-);
-
+router.use(authMiddleware);
 
 // CREATE
-router.post(
-  "/",
-  createCategoryController
-);
-
+router.post("/", createCategoryController);
 
 // GET ALL
-router.get(
-  "/",
-  getAllCategoriesController
-);
-
+router.get("/", getAllCategoriesController);
 
 // GET ONE
-router.get(
-  "/:id",
-  getCategoryByIdController
-);
-
+router.get("/:id", getCategoryByIdController);
 
 // UPDATE
-router.patch(
-  "/:id",
-  updateCategoryController
-);
-
+router.patch("/:id", updateCategoryController);
 
 // DELETE / DEACTIVATE
-router.delete(
-  "/:id",
-  deleteCategoryController
-);
-
+router.delete("/:id", deleteCategoryController);
 
 export default router;

@@ -1,12 +1,6 @@
-import {
-  Schema,
-  model,
-} from "mongoose";
+import { Schema, model } from "mongoose";
 
-import type {
-  IOtp,
-  OtpPurpose,
-} from "./otp.interface.js";
+import type { IOtp, OtpPurpose } from "./otp.interface.js";
 
 const otpSchema = new Schema<IOtp>(
   {
@@ -24,10 +18,7 @@ const otpSchema = new Schema<IOtp>(
 
     purpose: {
       type: String,
-      enum: [
-        "EMAIL_VERIFICATION",
-        "PASSWORD_RESET",
-      ] satisfies OtpPurpose[],
+      enum: ["EMAIL_VERIFICATION", "PASSWORD_RESET"] satisfies OtpPurpose[],
       required: true,
     },
 
@@ -60,14 +51,14 @@ const otpSchema = new Schema<IOtp>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 otpSchema.index(
   { expiresAt: 1 },
   {
     expireAfterSeconds: 0,
-  }
+  },
 );
 
 otpSchema.index(
@@ -77,10 +68,7 @@ otpSchema.index(
   },
   {
     unique: true,
-  }
+  },
 );
 
-export const Otp = model<IOtp>(
-  "Otp",
-  otpSchema
-);
+export const Otp = model<IOtp>("Otp", otpSchema);

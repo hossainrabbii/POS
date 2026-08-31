@@ -1,516 +1,336 @@
-import {
-  Product,
-} from "../product/product.model.js";
+import { Product } from "../product/product.model.js";
 
-import {
-  Sale,
-} from "../sale/sale.model.js";
-
+import { Sale } from "../sale/sale.model.js";
 
 // ======================================================
 // TYPES
 // ======================================================
 
-type DashboardPeriod =
-  | "today"
-  | "week"
-  | "month"
-  | "year"
-  | "custom";
-
+type DashboardPeriod = "today" | "week" | "month" | "year" | "custom";
 
 // ======================================================
 // DATE RANGE HELPER
 // ======================================================
 
-const getDateRange =
-  (
-    period: DashboardPeriod,
-    year?: number,
-    from?: string,
-    to?: string
-  ) => {
+const getDateRange = (
+  period: DashboardPeriod,
+  year?: number,
+  from?: string,
+  to?: string,
+) => {
+  let fromDate: Date;
 
-    let fromDate:
-      Date;
+  let toDate: Date;
 
-    let toDate:
-      Date;
+  // ==================================================
+  // TODAY
+  // ==================================================
 
+  if (period === "today") {
+    fromDate = new Date();
 
-    // ==================================================
-    // TODAY
-    // ==================================================
+    fromDate.setHours(0, 0, 0, 0);
 
-    if (
-      period === "today"
-    ) {
+    toDate = new Date();
 
-      fromDate =
-        new Date();
+    toDate.setHours(23, 59, 59, 999);
 
-      fromDate.setHours(
-        0,
-        0,
-        0,
-        0
-      );
+    return {
+      fromDate,
+      toDate,
+    };
+  }
 
+  // ==================================================
+  // LAST 7 DAYS
+  // ==================================================
 
-      toDate =
-        new Date();
+  if (period === "week") {
+    const now = new Date();
 
-      toDate.setHours(
-        23,
-        59,
-        59,
-        999
-      );
+    fromDate = new Date(now);
 
+    // Today + previous 6 days
+    // = exactly 7 calendar days
 
-      return {
-        fromDate,
-        toDate,
-      };
+    fromDate.setDate(fromDate.getDate() - 6);
+
+    fromDate.setHours(0, 0, 0, 0);
+
+    toDate = new Date(now);
+
+    toDate.setHours(23, 59, 59, 999);
+
+    return {
+      fromDate,
+      toDate,
+    };
+  }
+
+  // ==================================================
+  // CURRENT MONTH
+  // ==================================================
+
+  if (period === "month") {
+    const now = new Date();
+
+    fromDate = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    fromDate.setHours(0, 0, 0, 0);
+
+    toDate = new Date(now);
+
+    toDate.setHours(23, 59, 59, 999);
+
+    return {
+      fromDate,
+      toDate,
+    };
+  }
+
+  // ==================================================
+  // YEAR
+  // ==================================================
+
+  if (period === "year") {
+    const selectedYear = year ?? new Date().getFullYear();
+
+    fromDate = new Date(selectedYear, 0, 1);
+
+    fromDate.setHours(0, 0, 0, 0);
+
+    toDate = new Date(selectedYear, 11, 31);
+
+    toDate.setHours(23, 59, 59, 999);
+
+    return {
+      fromDate,
+      toDate,
+    };
+  }
+
+  // ==================================================
+  // CUSTOM
+  // ==================================================
+
+  if (period === "custom") {
+    if (!from || !to) {
+      throw new Error("Both from and to dates are required for custom period");
     }
 
+    fromDate = new Date(from);
 
-    // ==================================================
-    // LAST 7 DAYS
-    // ==================================================
+    toDate = new Date(to);
 
-    if (
-      period === "week"
-    ) {
-
-      const now =
-        new Date();
-
-
-      fromDate =
-        new Date(now);
-
-      // Today + previous 6 days
-      // = exactly 7 calendar days
-
-      fromDate.setDate(
-        fromDate.getDate() - 6
-      );
-
-      fromDate.setHours(
-        0,
-        0,
-        0,
-        0
-      );
-
-
-      toDate =
-        new Date(now);
-
-      toDate.setHours(
-        23,
-        59,
-        59,
-        999
-      );
-
-
-      return {
-        fromDate,
-        toDate,
-      };
+    if (Number.isNaN(fromDate.getTime())) {
+      throw new Error("Invalid from date");
     }
 
-
-    // ==================================================
-    // CURRENT MONTH
-    // ==================================================
-
-    if (
-      period === "month"
-    ) {
-
-      const now =
-        new Date();
-
-
-      fromDate =
-        new Date(
-          now.getFullYear(),
-          now.getMonth(),
-          1
-        );
-
-      fromDate.setHours(
-        0,
-        0,
-        0,
-        0
-      );
-
-
-      toDate =
-        new Date(now);
-
-      toDate.setHours(
-        23,
-        59,
-        59,
-        999
-      );
-
-
-      return {
-        fromDate,
-        toDate,
-      };
+    if (Number.isNaN(toDate.getTime())) {
+      throw new Error("Invalid to date");
     }
 
+    fromDate.setHours(0, 0, 0, 0);
 
-    // ==================================================
-    // YEAR
-    // ==================================================
+    toDate.setHours(23, 59, 59, 999);
 
-    if (
-      period === "year"
-    ) {
-
-      const selectedYear =
-        year ??
-        new Date().getFullYear();
-
-
-      fromDate =
-        new Date(
-          selectedYear,
-          0,
-          1
-        );
-
-      fromDate.setHours(
-        0,
-        0,
-        0,
-        0
-      );
-
-
-      toDate =
-        new Date(
-          selectedYear,
-          11,
-          31
-        );
-
-      toDate.setHours(
-        23,
-        59,
-        59,
-        999
-      );
-
-
-      return {
-        fromDate,
-        toDate,
-      };
+    if (fromDate > toDate) {
+      throw new Error("From date cannot be greater than to date");
     }
 
+    return {
+      fromDate,
+      toDate,
+    };
+  }
 
-    // ==================================================
-    // CUSTOM
-    // ==================================================
-
-    if (
-      period === "custom"
-    ) {
-
-      if (
-        !from ||
-        !to
-      ) {
-
-        throw new Error(
-          "Both from and to dates are required for custom period"
-        );
-      }
-
-
-      fromDate =
-        new Date(from);
-
-      toDate =
-        new Date(to);
-
-
-      if (
-        Number.isNaN(
-          fromDate.getTime()
-        )
-      ) {
-
-        throw new Error(
-          "Invalid from date"
-        );
-      }
-
-
-      if (
-        Number.isNaN(
-          toDate.getTime()
-        )
-      ) {
-
-        throw new Error(
-          "Invalid to date"
-        );
-      }
-
-
-      fromDate.setHours(
-        0,
-        0,
-        0,
-        0
-      );
-
-
-      toDate.setHours(
-        23,
-        59,
-        59,
-        999
-      );
-
-
-      if (
-        fromDate >
-        toDate
-      ) {
-
-        throw new Error(
-          "From date cannot be greater than to date"
-        );
-      }
-
-
-      return {
-        fromDate,
-        toDate,
-      };
-    }
-
-
-    throw new Error(
-      "Invalid dashboard period"
-    );
-  };
-
+  throw new Error("Invalid dashboard period");
+};
 
 // ======================================================
 // GET DASHBOARD OVERVIEW
 // ======================================================
 
-export const getDashboardOverview =
-  async (
-    period:
-      DashboardPeriod,
+export const getDashboardOverview = async (
+  period: DashboardPeriod,
 
-    year?: number,
+  year?: number,
 
-    from?: string,
+  from?: string,
 
-    to?: string
-  ) => {
+  to?: string,
+) => {
+  // ==================================================
+  // DATE RANGE
+  // ==================================================
 
-    // ==================================================
-    // DATE RANGE
-    // ==================================================
+  const { fromDate, toDate } = getDateRange(period, year, from, to);
 
-    const {
-      fromDate,
-      toDate,
-    } =
-      getDateRange(
-        period,
-        year,
-        from,
-        to
-      );
+  // ==================================================
+  // SALES MATCH
+  // ==================================================
+
+  const salesMatch = {
+    createdAt: {
+      $gte: fromDate,
+
+      $lte: toDate,
+    },
+  };
+// ======================================================
+// RUN QUERIES
+// ======================================================
+
+const [
+
+  // ----------------------------------------------
+  // Product count
+  // ----------------------------------------------
+
+  totalProducts,
+
+  // ----------------------------------------------
+  // Total current stock
+  // ----------------------------------------------
+
+  stockResult,
+
+  // ----------------------------------------------
+  // Low stock count
+  // ----------------------------------------------
+
+  lowStockProducts,
+
+  // ----------------------------------------------
+  // Sales statistics
+  // ----------------------------------------------
+
+  salesStatistics,
+
+  // ----------------------------------------------
+  // Best-selling products
+  // ----------------------------------------------
+
+  bestSellingProducts,
+
+] =
+  await Promise.all([
 
 
-    // ==================================================
-    // SALES MATCH
-    // ==================================================
+    // ============================================
+    // TOTAL ACTIVE PRODUCTS
+    // ============================================
 
-    const salesMatch = {
+    Product.countDocuments({
+      isActive: true,
+    }),
 
-      createdAt: {
 
-        $gte:
-          fromDate,
+    // ============================================
+    // CURRENT STOCK
+    // ============================================
 
-        $lte:
-          toDate,
+    Product.aggregate([
+
+      {
+        $match: {
+          isActive: true,
+        },
+      },
+
+      {
+        $group: {
+
+          _id:
+            null,
+
+          totalStock: {
+            $sum:
+              "$quantity",
+          },
+
+        },
+      },
+
+    ]),
+
+
+    // ============================================
+    // LOW STOCK PRODUCTS
+    // ============================================
+
+    Product.countDocuments({
+
+      isActive:
+        true,
+
+      $expr: {
+
+        $lte: [
+
+          "$quantity",
+
+          "$lowStockThreshold",
+
+        ],
 
       },
 
-    };
+    }),
 
 
-    // ==================================================
-    // RUN QUERIES
-    // ==================================================
+    // ============================================
+    // SALES STATISTICS
+    // ============================================
 
-    const [
+    Sale.aggregate([
 
-      // ----------------------------------------------
-      // Product count
-      // ----------------------------------------------
+      // ------------------------------------------
+      // Filter by selected period
+      // ------------------------------------------
 
-      totalProducts,
-
-      // ----------------------------------------------
-      // Total current stock
-      // ----------------------------------------------
-
-      stockResult,
-
-      // ----------------------------------------------
-      // Low stock count
-      // ----------------------------------------------
-
-      lowStockProducts,
-
-      // ----------------------------------------------
-      // Sales statistics
-      // ----------------------------------------------
-
-      salesStatistics,
-
-    ] =
-      await Promise.all([
+      {
+        $match:
+          salesMatch,
+      },
 
 
-        // ============================================
-        // TOTAL ACTIVE PRODUCTS
-        // ============================================
+      // ------------------------------------------
+      // Calculate sale profit
+      // ------------------------------------------
 
-        Product.countDocuments({
-          isActive: true,
-        }),
+      {
+        $addFields: {
 
+          saleProfit: {
 
-        // ============================================
-        // CURRENT STOCK
-        // ============================================
+            $sum: {
 
-        Product.aggregate([
+              $map: {
 
-          {
-            $match: {
-              isActive: true,
-            },
-          },
+                input:
+                  "$items",
 
-          {
-            $group: {
+                as:
+                  "item",
 
-              _id:
-                null,
+                in: {
 
-              totalStock: {
-                $sum:
-                  "$quantity",
-              },
+                  $multiply: [
 
-            },
-          },
+                    {
+                      $subtract: [
 
-        ]),
+                        "$$item.unitPrice",
 
-
-        // ============================================
-        // LOW STOCK PRODUCTS
-        // ============================================
-
-        Product.countDocuments({
-
-          isActive:
-            true,
-
-          $expr: {
-
-            $lte: [
-
-              "$quantity",
-
-              "$lowStockThreshold",
-
-            ],
-
-          },
-
-        }),
-
-
-        // ============================================
-        // SALES STATISTICS
-        // ============================================
-
-        Sale.aggregate([
-
-          // ------------------------------------------
-          // Filter by selected period
-          // ------------------------------------------
-
-          {
-            $match:
-              salesMatch,
-          },
-
-
-          // ------------------------------------------
-          // Calculate sale profit
-          // ------------------------------------------
-
-          {
-            $addFields: {
-
-              saleProfit: {
-
-                $sum: {
-
-                  $map: {
-
-                    input:
-                      "$items",
-
-                    as:
-                      "item",
-
-                    in: {
-
-                      $multiply: [
-
-                        {
-                          $subtract: [
-
-                            "$$item.unitPrice",
-
-                            "$$item.purchasePrice",
-
-                          ],
-                        },
-
-                        "$$item.quantity",
+                        "$$item.purchasePrice",
 
                       ],
-
                     },
 
-                  },
+                    "$$item.quantity",
+
+                  ],
 
                 },
 
@@ -520,142 +340,314 @@ export const getDashboardOverview =
 
           },
 
+        },
 
-          // ------------------------------------------
-          // Group statistics
-          // ------------------------------------------
+      },
 
-          {
-            $group: {
 
-              _id:
-                null,
+      // ------------------------------------------
+      // Group statistics
+      // ------------------------------------------
 
-              totalSales: {
+      {
+        $group: {
 
-                $sum:
-                  "$totalAmount",
+          _id:
+            null,
 
-              },
+          totalSales: {
 
-              totalPaid: {
+            $sum:
+              "$totalAmount",
 
-                $sum:
-                  "$paidAmount",
+          },
 
-              },
+          totalPaid: {
 
-              totalDue: {
+            $sum:
+              "$paidAmount",
 
-                $sum:
-                  "$dueAmount",
+          },
 
-              },
+          totalDue: {
 
-              totalProfit: {
+            $sum:
+              "$dueAmount",
 
-                $sum:
-                  "$saleProfit",
+          },
 
-              },
+          totalProfit: {
 
-              totalTransactions: {
+            $sum:
+              "$saleProfit",
 
-                $sum:
-                  1,
+          },
 
-              },
+          totalTransactions: {
+
+            $sum:
+              1,
+
+          },
+
+        },
+
+      },
+
+    ]),
+
+
+    // ============================================
+    // BEST-SELLING PRODUCTS
+    // ============================================
+
+    Sale.aggregate([
+
+      // ------------------------------------------
+      // Filter sales by selected period
+      // ------------------------------------------
+
+      {
+        $match:
+          salesMatch,
+      },
+
+
+      // ------------------------------------------
+      // Break sale items into individual records
+      // ------------------------------------------
+
+      {
+        $unwind:
+          "$items",
+      },
+
+
+      // ------------------------------------------
+      // Group by product
+      // ------------------------------------------
+
+      {
+        $group: {
+
+          _id:
+            "$items.product",
+
+          quantitySold: {
+
+            $sum:
+              "$items.quantity",
+
+          },
+
+          revenue: {
+
+            $sum: {
+
+              $multiply: [
+
+                "$items.unitPrice",
+
+                "$items.quantity",
+
+              ],
 
             },
 
           },
 
-        ]),
-
-      ]);
-
-
-    // ==================================================
-    // SALES RESULT
-    // ==================================================
-
-    const statistics =
-      salesStatistics[0] ?? {
-
-        totalSales:
-          0,
-
-        totalPaid:
-          0,
-
-        totalDue:
-          0,
-
-        totalProfit:
-          0,
-
-        totalTransactions:
-          0,
-
-      };
-
-
-    // ==================================================
-    // STOCK RESULT
-    // ==================================================
-
-    const totalStock =
-      stockResult[0]?.totalStock ?? 0;
-
-
-    // ==================================================
-    // RETURN
-    // ==================================================
-
-    return {
-
-      period,
-
-      dateRange: {
-
-        from:
-          fromDate,
-
-        to:
-          toDate,
+        },
 
       },
 
 
-      products: {
+      // ------------------------------------------
+      // Highest quantity sold first
+      // ------------------------------------------
 
-        totalProducts,
+      {
+        $sort: {
 
-        totalStock,
+          quantitySold:
+            -1,
 
-        lowStockProducts,
+        },
+
+      },
+
+
+      // ------------------------------------------
+      // Limit results
+      // ------------------------------------------
+
+      {
+        $limit:
+          10,
 
       },
 
 
-      sales: {
+      // ------------------------------------------
+      // Get product information
+      // ------------------------------------------
 
-        totalSales:
-          statistics.totalSales,
+      {
+        $lookup: {
 
-        totalPaid:
-          statistics.totalPaid,
+          from:
+            "products",
 
-        totalDue:
-          statistics.totalDue,
+          localField:
+            "_id",
 
-        totalProfit:
-          statistics.totalProfit,
+          foreignField:
+            "_id",
 
-        totalTransactions:
-          statistics.totalTransactions,
+          as:
+            "product",
+
+        },
 
       },
 
-    };
+
+      // ------------------------------------------
+      // Convert product array to object
+      // ------------------------------------------
+
+      {
+        $unwind: {
+
+          path:
+            "$product",
+
+          preserveNullAndEmptyArrays:
+            false,
+
+        },
+
+      },
+
+
+      // ------------------------------------------
+      // Only return active products
+      // ------------------------------------------
+
+      {
+        $match: {
+
+          "product.isActive":
+            true,
+
+        },
+
+      },
+
+
+      // ------------------------------------------
+      // Shape response
+      // ------------------------------------------
+
+      {
+        $project: {
+
+          _id:
+            0,
+
+          productId:
+            "$_id",
+
+          name:
+            "$product.name",
+
+          sku:
+            "$product.sku",
+
+          quantitySold:
+            1,
+
+          revenue:
+            1,
+
+        },
+
+      },
+
+    ]),
+
+  ]);
+
+  
+  // ==================================================
+  // SALES RESULT
+  // ==================================================
+
+  const statistics = salesStatistics[0] ?? {
+    totalSales: 0,
+
+    totalPaid: 0,
+
+    totalDue: 0,
+
+    totalProfit: 0,
+
+    totalTransactions: 0,
   };
+
+  // ==================================================
+  // STOCK RESULT
+  // ==================================================
+
+  const totalStock = stockResult[0]?.totalStock ?? 0;
+
+  // ==================================================
+  // RETURN
+  // ==================================================
+
+return {
+
+  period,
+
+  dateRange: {
+
+    from:
+      fromDate,
+
+    to:
+      toDate,
+
+  },
+
+
+  products: {
+
+    totalProducts,
+
+    totalStock,
+
+    lowStockProducts,
+
+  },
+
+
+  sales: {
+
+    totalSales:
+      statistics.totalSales,
+
+    totalPaid:
+      statistics.totalPaid,
+
+    totalDue:
+      statistics.totalDue,
+
+    totalProfit:
+      statistics.totalProfit,
+
+    totalTransactions:
+      statistics.totalTransactions,
+
+  },
+  bestSellingProducts,
+};
+};

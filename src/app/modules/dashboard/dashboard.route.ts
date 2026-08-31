@@ -1,32 +1,15 @@
-import {
-  Router,
-} from "express";
+import { Router } from "express";
 
-import authMiddleware
-  from "../../middlewares/authMiddleware.js";
+import authMiddleware from "../../middlewares/authMiddleware.js";
 
-import {
-  getDashboardOverviewController,
-} from "./dashboard.controller.js";
+import { getDashboardOverviewController } from "./dashboard.controller.js";
 
-
-const router =
-  Router();
-
+const router = Router();
 
 // ======================================================
 // GET DASHBOARD OVERVIEW
 // ======================================================
 
-router.get(
-
-  "/overview",
-
-  authMiddleware,
-
-  getDashboardOverviewController
-
-);
-
+router.get("/overview", authMiddleware, getDashboardOverviewController);
 
 export default router;
