@@ -10,6 +10,7 @@ import {
   addSalePaymentController,
   getAllSalesController,
   getSaleByIdController,
+  getSalesStatisticsController,
 } from "./sale.controller.js";
 
 
@@ -50,6 +51,17 @@ router.get(
   authMiddleware,
   getAllSalesController
 );
+
+// ======================================================
+// GET SALES STATISTICS
+// ======================================================
+
+router.get(
+  "/statistics",
+  authMiddleware,
+  getSalesStatisticsController
+);
+
 // ======================================================
 // GET SINGLE SALE
 // ======================================================

@@ -966,3 +966,133 @@ export const getSaleById =
 
     return sale;
   };
+
+  // ======================================================
+// GET SALES STATISTICS
+// ======================================================
+
+export const getSalesStatistics =
+  async () => {
+
+    // --------------------------------------------------
+    // Aggregate sales statistics
+    // --------------------------------------------------
+
+    const result =
+      await Sale.aggregate([
+
+        // ------------------------------------------------
+        // Unwind sale items
+        // ------------------------------------------------
+
+        {
+          $unwind: "$items",
+        },
+
+
+        // ------------------------------------------------
+        // Calculate item gross profit
+        // ------------------------------------------------
+
+        {
+          $addFields: {
+
+            itemProfit: {
+              $multiply: [
+
+                {
+                  $subtract: [
+                    "$items.unitPrice",
+                    "$items.purchasePrice",
+                  ],
+                },
+
+                "$items.quantity",
+
+              ],
+            },
+
+          },
+        },
+
+
+        // ------------------------------------------------
+        // Group everything
+        // ------------------------------------------------
+
+        {
+          $group: {
+
+            _id: null,
+
+            totalSales: {
+              $sum: "$totalAmount",
+            },
+
+            totalPaid: {
+              $sum: "$paidAmount",
+            },
+
+            totalDue: {
+              $sum: "$dueAmount",
+            },
+
+            totalProfit: {
+              $sum: "$itemProfit",
+            },
+
+            totalTransactions: {
+              $addToSet: "$_id",
+            },
+
+          },
+        },
+
+      ]);
+
+
+    // --------------------------------------------------
+    // No sales
+    // --------------------------------------------------
+
+    if (!result[0]) {
+
+      return {
+
+        totalSales: 0,
+
+        totalPaid: 0,
+
+        totalDue: 0,
+
+        totalProfit: 0,
+
+        totalTransactions: 0,
+
+      };
+    }
+
+
+    // --------------------------------------------------
+    // Return statistics
+    // --------------------------------------------------
+
+    return {
+
+      totalSales:
+        result[0].totalSales,
+
+      totalPaid:
+        result[0].totalPaid,
+
+      totalDue:
+        result[0].totalDue,
+
+      totalProfit:
+        result[0].totalProfit,
+
+      totalTransactions:
+        result[0].totalTransactions.length,
+
+    };
+  };

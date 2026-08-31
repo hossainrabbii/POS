@@ -17,6 +17,7 @@ import {
   createSale,
   getAllSales,
   getSaleById,
+  getSalesStatistics,
 } from "./sale.service.js";
 
 
@@ -146,7 +147,54 @@ export const getAllSalesController =
     });
   };
 
+// ======================================================
+// GET SALES STATISTICS
+// ======================================================
 
+export const getSalesStatisticsController =
+  async (
+    req: AuthenticatedRequest,
+    res: Response
+  ) => {
+
+    // --------------------------------------------------
+    // Authentication
+    // --------------------------------------------------
+
+    if (!req.userId) {
+      return res.status(401).json({
+        success: false,
+
+        message:
+          "Unauthorized",
+      });
+    }
+
+
+    // --------------------------------------------------
+    // Get statistics
+    // --------------------------------------------------
+
+    const result =
+      await getSalesStatistics();
+
+
+    // --------------------------------------------------
+    // Response
+    // --------------------------------------------------
+
+    return res.status(200).json({
+
+      success: true,
+
+      message:
+        "Sales statistics fetched successfully",
+
+      data:
+        result,
+
+    });
+  };
 // ======================================================
 // GET SINGLE SALE
 // ======================================================
