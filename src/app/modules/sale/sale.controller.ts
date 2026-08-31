@@ -10,6 +10,7 @@ import {
   addSalePaymentValidation,
   createSaleValidation,
   getAllSalesValidation,
+  getSalesStatisticsValidation,
 } from "./sale.validation.js";
 
 import {
@@ -146,7 +147,6 @@ export const getAllSalesController =
         result,
     });
   };
-
 // ======================================================
 // GET SALES STATISTICS
 // ======================================================
@@ -162,13 +162,26 @@ export const getSalesStatisticsController =
     // --------------------------------------------------
 
     if (!req.userId) {
+
       return res.status(401).json({
+
         success: false,
 
         message:
           "Unauthorized",
+
       });
     }
+
+
+    // --------------------------------------------------
+    // Validate query parameters
+    // --------------------------------------------------
+
+    const query =
+      getSalesStatisticsValidation.parse(
+        req.query
+      );
 
 
     // --------------------------------------------------
@@ -176,7 +189,15 @@ export const getSalesStatisticsController =
     // --------------------------------------------------
 
     const result =
-      await getSalesStatistics();
+      await getSalesStatistics(
+
+        query.period,
+
+        query.from,
+
+        query.to
+
+      );
 
 
     // --------------------------------------------------

@@ -967,115 +967,435 @@ export const getSaleById =
     return sale;
   };
 
-  // ======================================================
+// ======================================================
 // GET SALES STATISTICS
 // ======================================================
 
 export const getSalesStatistics =
-  async () => {
+  async (
+    period?:
+      | "today"
+      | "week"
+      | "month"
+      | "custom",
+
+    from?: string,
+
+    to?: string
+  ) => {
+
+    // ==================================================
+    // MATCH CONDITIONS
+    // ==================================================
+
+    const match: Record<
+      string,
+      unknown
+    > = {};
+
+
+    // ==================================================
+    // DATE RANGE
+    // ==================================================
+
+    let fromDate:
+      Date | undefined;
+
+    let toDate:
+      Date | undefined;
+
 
     // --------------------------------------------------
-    // Aggregate sales statistics
+    // TODAY
     // --------------------------------------------------
+
+    if (
+      period === "today"
+    ) {
+
+      fromDate =
+        new Date();
+
+      fromDate.setHours(
+        0,
+        0,
+        0,
+        0
+      );
+
+
+      toDate =
+        new Date();
+
+      toDate.setHours(
+        23,
+        59,
+        59,
+        999
+      );
+    }
+
+
+    // --------------------------------------------------
+    // THIS WEEK
+    // --------------------------------------------------
+
+    if (
+      period === "week"
+    ) {
+
+      const now =
+        new Date();
+
+
+      fromDate =
+        new Date(now);
+
+
+      const day =
+        fromDate.getDay();
+
+
+      // Sunday = 0
+      // Monday = 1
+      //
+      // Convert Sunday to 6 days back,
+      // Monday to 0 days back.
+
+      const daysFromMonday =
+        day === 0
+          ? 6
+          : day - 1;
+
+
+      fromDate.setDate(
+        fromDate.getDate() -
+        daysFromMonday
+      );
+
+
+      fromDate.setHours(
+        0,
+        0,
+        0,
+        0
+      );
+
+
+      toDate =
+        new Date();
+
+      toDate.setHours(
+        23,
+        59,
+        59,
+        999
+      );
+    }
+
+
+    // --------------------------------------------------
+    // THIS MONTH
+    // --------------------------------------------------
+
+    if (
+      period === "month"
+    ) {
+
+      const now =
+        new Date();
+
+
+      fromDate =
+        new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          1
+        );
+
+
+      fromDate.setHours(
+        0,
+        0,
+        0,
+        0
+      );
+
+
+      toDate =
+        new Date();
+
+      toDate.setHours(
+        23,
+        59,
+        59,
+        999
+      );
+    }
+
+
+    // --------------------------------------------------
+    // CUSTOM DATE RANGE
+    // --------------------------------------------------
+
+    if (
+      period === "custom"
+    ) {
+
+      if (!from || !to) {
+
+        throw new Error(
+          "Both from and to dates are required for custom period"
+        );
+      }
+
+
+      fromDate =
+        new Date(from);
+
+      toDate =
+        new Date(to);
+
+
+      if (
+        Number.isNaN(
+          fromDate.getTime()
+        )
+      ) {
+
+        throw new Error(
+          "Invalid from date"
+        );
+      }
+
+
+      if (
+        Number.isNaN(
+          toDate.getTime()
+        )
+      ) {
+
+        throw new Error(
+          "Invalid to date"
+        );
+      }
+
+
+      fromDate.setHours(
+        0,
+        0,
+        0,
+        0
+      );
+
+
+      toDate.setHours(
+        23,
+        59,
+        59,
+        999
+      );
+
+
+      if (
+        fromDate >
+        toDate
+      ) {
+
+        throw new Error(
+          "From date cannot be greater than to date"
+        );
+      }
+    }
+
+
+    // ==================================================
+    // APPLY DATE FILTER
+    // ==================================================
+
+    if (
+      fromDate ||
+      toDate
+    ) {
+
+      const createdAt: Record<
+        string,
+        Date
+      > = {};
+
+
+      if (fromDate) {
+
+        createdAt.$gte =
+          fromDate;
+      }
+
+
+      if (toDate) {
+
+        createdAt.$lte =
+          toDate;
+      }
+
+
+      match.createdAt =
+        createdAt;
+    }
+
+
+    // ==================================================
+    // AGGREGATION
+    // ==================================================
 
     const result =
       await Sale.aggregate([
 
         // ------------------------------------------------
-        // Unwind sale items
+        // Filter by date
         // ------------------------------------------------
 
         {
-          $unwind: "$items",
+          $match:
+            match,
         },
 
 
         // ------------------------------------------------
-        // Calculate item gross profit
+        // Calculate total profit for each sale
+        //
+        // IMPORTANT:
+        // Do this before grouping so each sale is counted
+        // exactly once for sales/paid/due/transactions.
         // ------------------------------------------------
 
         {
           $addFields: {
 
-            itemProfit: {
-              $multiply: [
+            saleProfit: {
 
-                {
-                  $subtract: [
-                    "$items.unitPrice",
-                    "$items.purchasePrice",
-                  ],
+              $sum: {
+
+                $map: {
+
+                  input:
+                    "$items",
+
+                  as:
+                    "item",
+
+                  in: {
+
+                    $multiply: [
+
+                      {
+                        $subtract: [
+
+                          "$$item.unitPrice",
+
+                          "$$item.purchasePrice",
+
+                        ],
+                      },
+
+                      "$$item.quantity",
+
+                    ],
+
+                  },
+
                 },
 
-                "$items.quantity",
+              },
 
-              ],
             },
 
           },
+
         },
 
 
         // ------------------------------------------------
-        // Group everything
+        // Group
         // ------------------------------------------------
 
         {
           $group: {
 
-            _id: null,
+            _id:
+              null,
 
             totalSales: {
-              $sum: "$totalAmount",
+
+              $sum:
+                "$totalAmount",
+
             },
 
             totalPaid: {
-              $sum: "$paidAmount",
+
+              $sum:
+                "$paidAmount",
+
             },
 
             totalDue: {
-              $sum: "$dueAmount",
+
+              $sum:
+                "$dueAmount",
+
             },
 
             totalProfit: {
-              $sum: "$itemProfit",
+
+              $sum:
+                "$saleProfit",
+
             },
 
             totalTransactions: {
-              $addToSet: "$_id",
+
+              $sum:
+                1,
+
             },
 
           },
+
         },
 
       ]);
 
 
-    // --------------------------------------------------
-    // No sales
-    // --------------------------------------------------
+    // ==================================================
+    // NO SALES
+    // ==================================================
 
     if (!result[0]) {
 
       return {
 
-        totalSales: 0,
+        totalSales:
+          0,
 
-        totalPaid: 0,
+        totalPaid:
+          0,
 
-        totalDue: 0,
+        totalDue:
+          0,
 
-        totalProfit: 0,
+        totalProfit:
+          0,
 
-        totalTransactions: 0,
+        totalTransactions:
+          0,
 
       };
     }
 
 
-    // --------------------------------------------------
-    // Return statistics
-    // --------------------------------------------------
+    // ==================================================
+    // RETURN STATISTICS
+    // ==================================================
 
     return {
 
@@ -1092,7 +1412,7 @@ export const getSalesStatistics =
         result[0].totalProfit,
 
       totalTransactions:
-        result[0].totalTransactions.length,
+        result[0].totalTransactions,
 
     };
   };
