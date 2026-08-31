@@ -9,11 +9,14 @@ import type {
 import {
   addSalePaymentValidation,
   createSaleValidation,
+  getAllSalesValidation,
 } from "./sale.validation.js";
 
 import {
   addSalePayment,
   createSale,
+  getAllSales,
+  getSaleById,
 } from "./sale.service.js";
 
 
@@ -27,6 +30,10 @@ export const createSaleController =
     res: Response
   ) => {
 
+    // --------------------------------------------------
+    // Authentication
+    // --------------------------------------------------
+
     if (!req.userId) {
       return res.status(401).json({
         success: false,
@@ -37,11 +44,19 @@ export const createSaleController =
     }
 
 
+    // --------------------------------------------------
+    // Validate request body
+    // --------------------------------------------------
+
     const data =
       createSaleValidation.parse(
         req.body
       );
 
+
+    // --------------------------------------------------
+    // Create sale
+    // --------------------------------------------------
 
     const result =
       await createSale(
@@ -50,13 +65,156 @@ export const createSaleController =
       );
 
 
+    // --------------------------------------------------
+    // Response
+    // --------------------------------------------------
+
     return res.status(201).json({
       success: true,
 
       message:
         "Sale created successfully",
 
-      data: result,
+      data:
+        result,
+    });
+  };
+
+
+// ======================================================
+// GET ALL SALES
+// ======================================================
+
+export const getAllSalesController =
+  async (
+    req: AuthenticatedRequest,
+    res: Response
+  ) => {
+
+    // --------------------------------------------------
+    // Authentication
+    // --------------------------------------------------
+
+    if (!req.userId) {
+      return res.status(401).json({
+        success: false,
+
+        message:
+          "Unauthorized",
+      });
+    }
+
+
+    // --------------------------------------------------
+    // Validate query parameters
+    // --------------------------------------------------
+
+    const query =
+      getAllSalesValidation.parse(
+        req.query
+      );
+
+
+    // --------------------------------------------------
+    // Get sales
+    // --------------------------------------------------
+
+    const result =
+      await getAllSales(
+        query.page,
+        query.limit,
+        query.search,
+        query.paymentStatus,
+        query.soldBy,
+        query.from,
+        query.to
+      );
+
+
+    // --------------------------------------------------
+    // Response
+    // --------------------------------------------------
+
+    return res.status(200).json({
+      success: true,
+
+      message:
+        "Sales fetched successfully",
+
+      data:
+        result,
+    });
+  };
+
+
+// ======================================================
+// GET SINGLE SALE
+// ======================================================
+
+export const getSaleByIdController =
+  async (
+    req: AuthenticatedRequest,
+    res: Response
+  ) => {
+
+    // --------------------------------------------------
+    // Authentication
+    // --------------------------------------------------
+
+    if (!req.userId) {
+      return res.status(401).json({
+        success: false,
+
+        message:
+          "Unauthorized",
+      });
+    }
+
+
+    // --------------------------------------------------
+    // Sale ID
+    // --------------------------------------------------
+
+    const saleId =
+      Array.isArray(
+        req.params.saleId
+      )
+        ? req.params.saleId[0]
+        : req.params.saleId;
+
+
+    if (!saleId) {
+      return res.status(400).json({
+        success: false,
+
+        message:
+          "Sale ID is required",
+      });
+    }
+
+
+    // --------------------------------------------------
+    // Get sale
+    // --------------------------------------------------
+
+    const result =
+      await getSaleById(
+        saleId
+      );
+
+
+    // --------------------------------------------------
+    // Response
+    // --------------------------------------------------
+
+    return res.status(200).json({
+      success: true,
+
+      message:
+        "Sale fetched successfully",
+
+      data:
+        result,
     });
   };
 
@@ -89,10 +247,12 @@ export const addSalePaymentController =
     // Sale ID
     // --------------------------------------------------
 
-   const saleId =
-  Array.isArray(req.params.saleId)
-    ? req.params.saleId[0]
-    : req.params.saleId;
+    const saleId =
+      Array.isArray(
+        req.params.saleId
+      )
+        ? req.params.saleId[0]
+        : req.params.saleId;
 
 
     if (!saleId) {
@@ -127,12 +287,17 @@ export const addSalePaymentController =
       );
 
 
+    // --------------------------------------------------
+    // Response
+    // --------------------------------------------------
+
     return res.status(200).json({
       success: true,
 
       message:
         "Payment received successfully",
 
-      data: result,
+      data:
+        result,
     });
   };

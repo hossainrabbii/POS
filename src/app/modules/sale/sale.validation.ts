@@ -138,3 +138,91 @@ export const addSalePaymentValidation =
         ),
 
   });
+
+  // ======================================================
+// GET ALL SALES QUERY VALIDATION
+// ======================================================
+export const getAllSalesValidation =
+  z.object({
+
+    // --------------------------------------------------
+    // Pagination
+    // --------------------------------------------------
+
+    page:
+      z.coerce
+        .number()
+        .int()
+        .min(
+          1,
+          "Page must be at least 1"
+        )
+        .default(1),
+
+    limit:
+      z.coerce
+        .number()
+        .int()
+        .min(
+          1,
+          "Limit must be at least 1"
+        )
+        .max(
+          100,
+          "Limit cannot exceed 100"
+        )
+        .default(20),
+
+
+    // --------------------------------------------------
+    // Search
+    // --------------------------------------------------
+
+    search:
+      z
+        .string()
+        .trim()
+        .optional(),
+
+
+    // --------------------------------------------------
+    // Payment Status
+    // --------------------------------------------------
+
+    paymentStatus:
+      z
+        .enum([
+          "PAID",
+          "DUE",
+        ])
+        .optional(),
+
+
+    // --------------------------------------------------
+    // Seller
+    // --------------------------------------------------
+
+    soldBy:
+      z
+        .string()
+        .trim()
+        .optional(),
+
+
+    // --------------------------------------------------
+    // Date Range
+    // --------------------------------------------------
+
+    from:
+      z
+        .string()
+        .trim()
+        .optional(),
+
+    to:
+      z
+        .string()
+        .trim()
+        .optional(),
+
+  });

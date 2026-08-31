@@ -625,3 +625,344 @@ export const addSalePayment =
 
     return sale;
   };
+
+// // ======================================================
+// GET ALL SALES
+// ======================================================
+
+export const getAllSales =
+  async (
+    page: number,
+    limit: number,
+    search?: string,
+    paymentStatus?: "PAID" | "DUE",
+    soldBy?: string,
+    from?: string,
+    to?: string
+  ) => {
+
+    // --------------------------------------------------
+    // Pagination
+    // --------------------------------------------------
+
+    const skip =
+      (page - 1) * limit;
+
+
+    // --------------------------------------------------
+    // Build query
+    // --------------------------------------------------
+
+    const query: Record<
+      string,
+      unknown
+    > = {};
+
+
+    // --------------------------------------------------
+    // Search
+    // --------------------------------------------------
+
+    if (search) {
+
+      query.$or = [
+
+        {
+          invoiceNumber: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+
+        {
+          "customer.name": {
+            $regex: search,
+            $options: "i",
+          },
+        },
+
+        {
+          "customer.phone": {
+            $regex: search,
+            $options: "i",
+          },
+        },
+
+      ];
+    }
+
+
+    // --------------------------------------------------
+    // Payment Status
+    // --------------------------------------------------
+
+    if (
+      paymentStatus === "PAID"
+    ) {
+
+      query.dueAmount = 0;
+
+    }
+
+    if (
+      paymentStatus === "DUE"
+    ) {
+
+      query.dueAmount = {
+        $gt: 0,
+      };
+
+    }
+
+
+    // --------------------------------------------------
+    // Seller
+    // --------------------------------------------------
+
+    if (soldBy) {
+
+      if (
+        !Types.ObjectId.isValid(
+          soldBy
+        )
+      ) {
+        throw new Error(
+          "Invalid seller ID"
+        );
+      }
+
+      query.soldBy =
+        new Types.ObjectId(
+          soldBy
+        );
+    }
+
+
+    // --------------------------------------------------
+    // Date Range
+    // --------------------------------------------------
+
+    if (from || to) {
+
+      const createdAt: Record<
+        string,
+        Date
+      > = {};
+
+
+      if (from) {
+
+        const fromDate =
+          new Date(from);
+
+        if (
+          Number.isNaN(
+            fromDate.getTime()
+          )
+        ) {
+          throw new Error(
+            "Invalid from date"
+          );
+        }
+
+        fromDate.setHours(
+          0,
+          0,
+          0,
+          0
+        );
+
+        createdAt.$gte =
+          fromDate;
+      }
+
+
+      if (to) {
+
+        const toDate =
+          new Date(to);
+
+        if (
+          Number.isNaN(
+            toDate.getTime()
+          )
+        ) {
+          throw new Error(
+            "Invalid to date"
+          );
+        }
+
+        toDate.setHours(
+          23,
+          59,
+          59,
+          999
+        );
+
+        createdAt.$lte =
+          toDate;
+      }
+
+
+      query.createdAt =
+        createdAt;
+    }
+
+
+    // --------------------------------------------------
+    // Fetch sales + total
+    // --------------------------------------------------
+
+    const [
+      sales,
+      total,
+    ] = await Promise.all([
+
+      Sale.find(query)
+
+        .populate({
+          path: "soldBy",
+          select:
+            "name email role",
+        })
+
+        .populate({
+          path:
+            "items.product",
+          select:
+            "name sku",
+        })
+
+        .populate({
+          path:
+            "payments.receivedBy",
+          select:
+            "name email role",
+        })
+
+        .sort({
+          createdAt: -1,
+        })
+
+        .skip(skip)
+
+        .limit(limit)
+
+        .lean(),
+
+      Sale.countDocuments(
+        query
+      ),
+
+    ]);
+
+
+    // --------------------------------------------------
+    // Pagination
+    // --------------------------------------------------
+
+    const totalPages =
+      Math.ceil(
+        total / limit
+      );
+
+
+    // --------------------------------------------------
+    // Return
+    // --------------------------------------------------
+
+    return {
+
+      sales,
+
+      pagination: {
+
+        currentPage:
+          page,
+
+        limit,
+
+        totalRecords:
+          total,
+
+        totalPages,
+
+        hasNextPage:
+          page < totalPages,
+
+        hasPreviousPage:
+          page > 1,
+
+      },
+
+    };
+  };
+
+// ======================================================
+// GET SINGLE SALE
+// ======================================================
+
+export const getSaleById =
+  async (
+    saleId: string
+  ): Promise<ISale> => {
+
+    // --------------------------------------------------
+    // Validate sale ID
+    // --------------------------------------------------
+
+    if (
+      !Types.ObjectId.isValid(
+        saleId
+      )
+    ) {
+      throw new Error(
+        "Invalid sale ID"
+      );
+    }
+
+
+    // --------------------------------------------------
+    // Find sale
+    // --------------------------------------------------
+
+    const sale =
+      await Sale.findById(
+        saleId
+      )
+        .populate({
+          path: "soldBy",
+          select:
+            "name email role",
+        })
+        .populate({
+          path:
+            "items.product",
+          select:
+            "name sku",
+        })
+        .populate({
+          path:
+            "payments.receivedBy",
+          select:
+            "name email role",
+        });
+
+
+    // --------------------------------------------------
+    // Sale not found
+    // --------------------------------------------------
+
+    if (!sale) {
+      throw new Error(
+        "Sale not found"
+      );
+    }
+
+
+    // --------------------------------------------------
+    // Return sale
+    // --------------------------------------------------
+
+    return sale;
+  };

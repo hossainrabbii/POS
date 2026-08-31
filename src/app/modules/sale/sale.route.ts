@@ -8,6 +8,8 @@ import authMiddleware
 import {
   createSaleController,
   addSalePaymentController,
+  getAllSalesController,
+  getSaleByIdController,
 } from "./sale.controller.js";
 
 
@@ -36,9 +38,25 @@ router.post(
   "/:saleId/payment",
 
   authMiddleware,
-
   addSalePaymentController
 );
 
+// ======================================================
+// GET ALL SALES
+// ======================================================
 
+router.get(
+  "/",
+  authMiddleware,
+  getAllSalesController
+);
+// ======================================================
+// GET SINGLE SALE
+// ======================================================
+
+router.get(
+  "/:saleId",
+  authMiddleware,
+  getSaleByIdController
+);
 export default router;
