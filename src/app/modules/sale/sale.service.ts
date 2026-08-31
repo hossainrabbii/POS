@@ -977,7 +977,10 @@ export const getSalesStatistics =
       | "today"
       | "week"
       | "month"
+      | "year"
       | "custom",
+
+    year?: number,
 
     from?: string,
 
@@ -1005,9 +1008,9 @@ export const getSalesStatistics =
       Date | undefined;
 
 
-    // --------------------------------------------------
+    // ==================================================
     // TODAY
-    // --------------------------------------------------
+    // ==================================================
 
     if (
       period === "today"
@@ -1036,9 +1039,9 @@ export const getSalesStatistics =
     }
 
 
-    // --------------------------------------------------
-    // THIS WEEK
-    // --------------------------------------------------
+    // ==================================================
+    // LAST 7 DAYS
+    // ==================================================
 
     if (
       period === "week"
@@ -1048,31 +1051,22 @@ export const getSalesStatistics =
         new Date();
 
 
+      // Today is included.
+      //
+      // Example:
+      // Today = August 23
+      //
+      // From = August 17
+      // To   = August 23
+      //
+      // This gives exactly 7 calendar days.
+
       fromDate =
         new Date(now);
 
-
-      const day =
-        fromDate.getDay();
-
-
-      // Sunday = 0
-      // Monday = 1
-      //
-      // Convert Sunday to 6 days back,
-      // Monday to 0 days back.
-
-      const daysFromMonday =
-        day === 0
-          ? 6
-          : day - 1;
-
-
       fromDate.setDate(
-        fromDate.getDate() -
-        daysFromMonday
+        fromDate.getDate() - 6
       );
-
 
       fromDate.setHours(
         0,
@@ -1083,7 +1077,7 @@ export const getSalesStatistics =
 
 
       toDate =
-        new Date();
+        new Date(now);
 
       toDate.setHours(
         23,
@@ -1094,9 +1088,9 @@ export const getSalesStatistics =
     }
 
 
-    // --------------------------------------------------
-    // THIS MONTH
-    // --------------------------------------------------
+    // ==================================================
+    // CURRENT MONTH
+    // ==================================================
 
     if (
       period === "month"
@@ -1123,7 +1117,7 @@ export const getSalesStatistics =
 
 
       toDate =
-        new Date();
+        new Date(now);
 
       toDate.setHours(
         23,
@@ -1134,15 +1128,72 @@ export const getSalesStatistics =
     }
 
 
-    // --------------------------------------------------
+    // ==================================================
+    // YEAR
+    // ==================================================
+
+    if (
+      period === "year"
+    ) {
+
+      const selectedYear =
+        year ??
+        new Date().getFullYear();
+
+
+      // ----------------------------------------------
+      // January 1
+      // ----------------------------------------------
+
+      fromDate =
+        new Date(
+          selectedYear,
+          0,
+          1
+        );
+
+
+      fromDate.setHours(
+        0,
+        0,
+        0,
+        0
+      );
+
+
+      // ----------------------------------------------
+      // December 31
+      // ----------------------------------------------
+
+      toDate =
+        new Date(
+          selectedYear,
+          11,
+          31
+        );
+
+
+      toDate.setHours(
+        23,
+        59,
+        59,
+        999
+      );
+    }
+
+
+    // ==================================================
     // CUSTOM DATE RANGE
-    // --------------------------------------------------
+    // ==================================================
 
     if (
       period === "custom"
     ) {
 
-      if (!from || !to) {
+      if (
+        !from ||
+        !to
+      ) {
 
         throw new Error(
           "Both from and to dates are required for custom period"
@@ -1261,11 +1312,7 @@ export const getSalesStatistics =
 
 
         // ------------------------------------------------
-        // Calculate total profit for each sale
-        //
-        // IMPORTANT:
-        // Do this before grouping so each sale is counted
-        // exactly once for sales/paid/due/transactions.
+        // Calculate total profit per sale
         // ------------------------------------------------
 
         {
@@ -1315,7 +1362,7 @@ export const getSalesStatistics =
 
 
         // ------------------------------------------------
-        // Group
+        // Group statistics
         // ------------------------------------------------
 
         {
@@ -1370,7 +1417,9 @@ export const getSalesStatistics =
     // NO SALES
     // ==================================================
 
-    if (!result[0]) {
+    if (
+      !result[0]
+    ) {
 
       return {
 

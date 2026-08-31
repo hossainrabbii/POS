@@ -188,16 +188,18 @@ export const getSalesStatisticsController =
     // Get statistics
     // --------------------------------------------------
 
-    const result =
-      await getSalesStatistics(
+ const result =
+  await getSalesStatistics(
 
-        query.period,
+    query.period,
 
-        query.from,
+    query.year,
 
-        query.to
+    query.from,
 
-      );
+    query.to
+
+  );
 
 
     // --------------------------------------------------

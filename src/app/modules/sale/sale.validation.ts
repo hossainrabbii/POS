@@ -248,8 +248,28 @@ export const getSalesStatisticsValidation =
             "today",
             "week",
             "month",
+            "year",
             "custom",
           ])
+          .optional(),
+
+      // ------------------------------------------------
+      // Year
+      // ------------------------------------------------
+
+      year:
+        z
+          .coerce
+          .number()
+          .int()
+          .min(
+            2000,
+            "Year must be at least 2000"
+          )
+          .max(
+            2100,
+            "Year cannot exceed 2100"
+          )
           .optional(),
 
       // ------------------------------------------------
@@ -343,6 +363,32 @@ export const getSalesStatisticsValidation =
 
             message:
               "From and to dates can only be used with custom period",
+
+          });
+
+        }
+
+
+        // ------------------------------------------------
+        // Year only works with year period
+        // ------------------------------------------------
+
+        if (
+          data.year !== undefined &&
+          data.period !== "year"
+        ) {
+
+          ctx.addIssue({
+
+            code:
+              z.ZodIssueCode.custom,
+
+            path: [
+              "year",
+            ],
+
+            message:
+              "Year can only be used with year period",
 
           });
 
