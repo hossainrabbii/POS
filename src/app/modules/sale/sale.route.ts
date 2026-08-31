@@ -22,13 +22,7 @@ const router =
 // CREATE SALE
 // ======================================================
 
-router.post(
-  "/",
-
-  authMiddleware,
-
-  createSaleController
-);
+router.post("/",authMiddleware,createSaleController);
 
 
 // ======================================================
