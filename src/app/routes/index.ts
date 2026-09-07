@@ -4,6 +4,7 @@ import categoryRoutes from "../modules/category/category.route.js";
 import productRoutes from "../modules/product/product.route.js";
 import saleRoutes from "../modules/sale/sale.route.js";
 import dashboardRoutes from "../modules/dashboard/dashboard.route.js";
+import userRoutes from "../modules/user/user.route.js";
 const router = Router();
 const moduleRoutes = [
   {
@@ -25,6 +26,10 @@ const moduleRoutes = [
   {
     path: "/dashboard",
     route: dashboardRoutes,
+  },
+  {
+    path: "/user",
+    route: userRoutes,
   },
 ];
 

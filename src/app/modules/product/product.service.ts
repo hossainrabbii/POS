@@ -120,7 +120,7 @@ export const createProduct = async (payload: ICreateProduct) => {
 
 export const getAllProducts = async () => {
   const products = await Product.find({
-    isActive: true,
+    // isActive: true,
   })
     .populate({
       path: "categoryId",
@@ -152,7 +152,7 @@ export const getProductById = async (productId: string) => {
 
   const product = await Product.findOne({
     _id: productId,
-    isActive: true,
+    // isActive: true,
   }).populate({
     path: "categoryId",
     select: "name isActive",
@@ -241,7 +241,7 @@ export const updateProduct = async (
   const product = await Product.findOneAndUpdate(
     {
       _id: productId,
-      isActive: true,
+      // isActive: true,
     },
 
     updateData,

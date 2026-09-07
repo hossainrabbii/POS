@@ -177,46 +177,42 @@ export const getDashboardOverview = async (
       $lte: toDate,
     },
   };
-// ======================================================
-// RUN QUERIES
-// ======================================================
+  // ======================================================
+  // RUN QUERIES
+  // ======================================================
 
-const [
+  const [
+    // ----------------------------------------------
+    // Product count
+    // ----------------------------------------------
 
-  // ----------------------------------------------
-  // Product count
-  // ----------------------------------------------
+    totalProducts,
 
-  totalProducts,
+    // ----------------------------------------------
+    // Total current stock
+    // ----------------------------------------------
 
-  // ----------------------------------------------
-  // Total current stock
-  // ----------------------------------------------
+    stockResult,
 
-  stockResult,
+    // ----------------------------------------------
+    // Low stock count
+    // ----------------------------------------------
 
-  // ----------------------------------------------
-  // Low stock count
-  // ----------------------------------------------
+    lowStockProducts,
 
-  lowStockProducts,
+    // ----------------------------------------------
+    // Sales statistics
+    // ----------------------------------------------
 
-  // ----------------------------------------------
-  // Sales statistics
-  // ----------------------------------------------
+    salesStatistics,
 
-  salesStatistics,
+    // ----------------------------------------------
+    // Best-selling products
+    // ----------------------------------------------
 
-  // ----------------------------------------------
-  // Best-selling products
-  // ----------------------------------------------
-
-  bestSellingProducts,
-
-] =
-  await Promise.all([
-
-
+    bestSellingProducts,
+    salesByEmployee,
+  ] = await Promise.all([
     // ============================================
     // TOTAL ACTIVE PRODUCTS
     // ============================================
@@ -225,13 +221,11 @@ const [
       isActive: true,
     }),
 
-
     // ============================================
     // CURRENT STOCK
     // ============================================
 
     Product.aggregate([
-
       {
         $match: {
           isActive: true,
@@ -240,60 +234,39 @@ const [
 
       {
         $group: {
-
-          _id:
-            null,
+          _id: null,
 
           totalStock: {
-            $sum:
-              "$quantity",
+            $sum: "$quantity",
           },
-
         },
       },
-
     ]),
-
 
     // ============================================
     // LOW STOCK PRODUCTS
     // ============================================
 
     Product.countDocuments({
-
-      isActive:
-        true,
+      isActive: true,
 
       $expr: {
-
-        $lte: [
-
-          "$quantity",
-
-          "$lowStockThreshold",
-
-        ],
-
+        $lte: ["$quantity", "$lowStockThreshold"],
       },
-
     }),
-
 
     // ============================================
     // SALES STATISTICS
     // ============================================
 
     Sale.aggregate([
-
       // ------------------------------------------
       // Filter by selected period
       // ------------------------------------------
 
       {
-        $match:
-          salesMatch,
+        $match: salesMatch,
       },
-
 
       // ------------------------------------------
       // Calculate sale profit
@@ -301,49 +274,27 @@ const [
 
       {
         $addFields: {
-
           saleProfit: {
-
             $sum: {
-
               $map: {
+                input: "$items",
 
-                input:
-                  "$items",
-
-                as:
-                  "item",
+                as: "item",
 
                 in: {
-
                   $multiply: [
-
                     {
-                      $subtract: [
-
-                        "$$item.unitPrice",
-
-                        "$$item.purchasePrice",
-
-                      ],
+                      $subtract: ["$$item.unitPrice", "$$item.purchasePrice"],
                     },
 
                     "$$item.quantity",
-
                   ],
-
                 },
-
               },
-
             },
-
           },
-
         },
-
       },
-
 
       // ------------------------------------------
       // Group statistics
@@ -351,77 +302,51 @@ const [
 
       {
         $group: {
-
-          _id:
-            null,
+          _id: null,
 
           totalSales: {
-
-            $sum:
-              "$totalAmount",
-
+            $sum: "$totalAmount",
           },
 
           totalPaid: {
-
-            $sum:
-              "$paidAmount",
-
+            $sum: "$paidAmount",
           },
 
           totalDue: {
-
-            $sum:
-              "$dueAmount",
-
+            $sum: "$dueAmount",
           },
 
           totalProfit: {
-
-            $sum:
-              "$saleProfit",
-
+            $sum: "$saleProfit",
           },
 
           totalTransactions: {
-
-            $sum:
-              1,
-
+            $sum: 1,
           },
-
         },
-
       },
-
     ]),
-
 
     // ============================================
     // BEST-SELLING PRODUCTS
     // ============================================
 
     Sale.aggregate([
-
       // ------------------------------------------
       // Filter sales by selected period
       // ------------------------------------------
 
       {
-        $match:
-          salesMatch,
+        $match: salesMatch,
       },
-
 
       // ------------------------------------------
       // Break sale items into individual records
       // ------------------------------------------
 
       {
-        $unwind:
-          "$items",
+        $unwind: "$items",
       },
-
 
       // ------------------------------------------
       // Group by product
@@ -429,37 +354,19 @@ const [
 
       {
         $group: {
-
-          _id:
-            "$items.product",
+          _id: "$items.product",
 
           quantitySold: {
-
-            $sum:
-              "$items.quantity",
-
+            $sum: "$items.quantity",
           },
 
           revenue: {
-
             $sum: {
-
-              $multiply: [
-
-                "$items.unitPrice",
-
-                "$items.quantity",
-
-              ],
-
+              $multiply: ["$items.unitPrice", "$items.quantity"],
             },
-
           },
-
         },
-
       },
-
 
       // ------------------------------------------
       // Highest quantity sold first
@@ -467,25 +374,17 @@ const [
 
       {
         $sort: {
-
-          quantitySold:
-            -1,
-
+          quantitySold: -1,
         },
-
       },
-
 
       // ------------------------------------------
       // Limit results
       // ------------------------------------------
 
       {
-        $limit:
-          10,
-
+        $limit: 10,
       },
-
 
       // ------------------------------------------
       // Get product information
@@ -493,23 +392,15 @@ const [
 
       {
         $lookup: {
+          from: "products",
 
-          from:
-            "products",
+          localField: "_id",
 
-          localField:
-            "_id",
+          foreignField: "_id",
 
-          foreignField:
-            "_id",
-
-          as:
-            "product",
-
+          as: "product",
         },
-
       },
-
 
       // ------------------------------------------
       // Convert product array to object
@@ -517,17 +408,11 @@ const [
 
       {
         $unwind: {
+          path: "$product",
 
-          path:
-            "$product",
-
-          preserveNullAndEmptyArrays:
-            false,
-
+          preserveNullAndEmptyArrays: false,
         },
-
       },
-
 
       // ------------------------------------------
       // Only return active products
@@ -535,14 +420,9 @@ const [
 
       {
         $match: {
-
-          "product.isActive":
-            true,
-
+          "product.isActive": true,
         },
-
       },
-
 
       // ------------------------------------------
       // Shape response
@@ -550,34 +430,124 @@ const [
 
       {
         $project: {
+          _id: 0,
 
-          _id:
-            0,
+          productId: "$_id",
 
-          productId:
-            "$_id",
+          name: "$product.name",
 
-          name:
-            "$product.name",
+          sku: "$product.sku",
 
-          sku:
-            "$product.sku",
+          quantitySold: 1,
 
-          quantitySold:
-            1,
-
-          revenue:
-            1,
-
+          revenue: 1,
         },
-
       },
-
     ]),
 
+    // ============================================
+    // SALES BY EMPLOYEE
+    // ============================================
+
+    Sale.aggregate([
+      // ------------------------------------------
+      // Filter sales by selected period
+      // ------------------------------------------
+
+      {
+        $match: salesMatch,
+      },
+
+      // ------------------------------------------
+      // Group sales by employee
+      // ------------------------------------------
+
+      {
+        $group: {
+          _id: "$soldBy",
+
+          totalSales: {
+            $sum: "$totalAmount",
+          },
+
+          totalPaid: {
+            $sum: "$paidAmount",
+          },
+
+          totalDue: {
+            $sum: "$dueAmount",
+          },
+
+          totalTransactions: {
+            $sum: 1,
+          },
+        },
+      },
+
+      // ------------------------------------------
+      // Highest sales first
+      // ------------------------------------------
+
+      {
+        $sort: {
+          totalSales: -1,
+        },
+      },
+
+      // ------------------------------------------
+      // Get employee information
+      // ------------------------------------------
+
+      {
+        $lookup: {
+          from: "users",
+
+          localField: "_id",
+
+          foreignField: "_id",
+
+          as: "employee",
+        },
+      },
+
+      // ------------------------------------------
+      // Convert employee array to object
+      // ------------------------------------------
+
+      {
+        $unwind: {
+          path: "$employee",
+
+          preserveNullAndEmptyArrays: false,
+        },
+      },
+
+      // ------------------------------------------
+      // Shape response
+      // ------------------------------------------
+
+      {
+        $project: {
+          _id: 0,
+
+          employeeId: "$_id",
+
+          name: "$employee.name",
+
+          email: "$employee.email",
+
+          totalSales: 1,
+
+          totalPaid: 1,
+
+          totalDue: 1,
+
+          totalTransactions: 1,
+        },
+      },
+    ]),
   ]);
 
-  
   // ==================================================
   // SALES RESULT
   // ==================================================
@@ -603,51 +573,37 @@ const [
   // ==================================================
   // RETURN
   // ==================================================
+  return {
+    period,
 
-return {
+    dateRange: {
+      from: fromDate,
 
-  period,
+      to: toDate,
+    },
 
-  dateRange: {
+    products: {
+      totalProducts,
 
-    from:
-      fromDate,
+      totalStock,
 
-    to:
-      toDate,
+      lowStockProducts,
+    },
 
-  },
+    sales: {
+      totalSales: statistics.totalSales,
 
+      totalPaid: statistics.totalPaid,
 
-  products: {
+      totalDue: statistics.totalDue,
 
-    totalProducts,
+      totalProfit: statistics.totalProfit,
 
-    totalStock,
+      totalTransactions: statistics.totalTransactions,
+    },
 
-    lowStockProducts,
+    bestSellingProducts,
 
-  },
-
-
-  sales: {
-
-    totalSales:
-      statistics.totalSales,
-
-    totalPaid:
-      statistics.totalPaid,
-
-    totalDue:
-      statistics.totalDue,
-
-    totalProfit:
-      statistics.totalProfit,
-
-    totalTransactions:
-      statistics.totalTransactions,
-
-  },
-  bestSellingProducts,
-};
+    salesByEmployee,
+  };
 };

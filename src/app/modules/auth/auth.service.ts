@@ -54,7 +54,6 @@ const createRefreshToken = (userId: string): string => {
     {
       userId,
     },
-
     appConfig.refresh_token_secret,
 
     {
@@ -477,7 +476,6 @@ export const forgotPassword = async (email: string) => {
 export const verifyResetOtp = async (email: string, otp: string) => {
   const otpRecord = await Otp.findOne({
     email,
-
     purpose: "PASSWORD_RESET",
   });
 

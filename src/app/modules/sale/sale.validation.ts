@@ -12,10 +12,14 @@ const customerSchema = z.object({
     .max(100, "Customer name cannot exceed 100 characters"),
 
   phone: z
-    .string()
+    .string({
+      error: "Customer phone number is required",
+    })
     .trim()
-    .max(30, "Phone number cannot exceed 30 characters")
-    .optional(),
+    .regex(
+      /^01\d{9}$/,
+      "Phone number must start with 01 and contain exactly 11 digits",
+    ),
 
   address: z
     .string()
