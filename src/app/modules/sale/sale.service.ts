@@ -735,20 +735,25 @@ export const getSalesStatistics = async (
     {
       $addFields: {
         saleProfit: {
-          $sum: {
-            $map: {
-              input: "$items",
-              as: "item",
-              in: {
-                $multiply: [
-                  {
-                    $subtract: ["$$item.unitPrice", "$$item.purchasePrice"],
+          $subtract: [
+            {
+              $sum: {
+                $map: {
+                  input: "$items",
+                  as: "item",
+                  in: {
+                    $multiply: [
+                      {
+                        $subtract: ["$$item.unitPrice", "$$item.purchasePrice"],
+                      },
+                      "$$item.quantity",
+                    ],
                   },
-                  "$$item.quantity",
-                ],
+                },
               },
             },
-          },
+            "$discount",
+          ],
         },
       },
     },
