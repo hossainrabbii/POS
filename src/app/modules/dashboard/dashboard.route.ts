@@ -7,9 +7,15 @@ import { getDashboardOverviewController } from "./dashboard.controller.js";
 const router = Router();
 
 // ======================================================
+// ALL PRODUCT ROUTES REQUIRE VALID ACCESS TOKEN
+// ======================================================
+
+router.use(authMiddleware);
+
+// ======================================================
 // GET DASHBOARD OVERVIEW
 // ======================================================
 
-router.get("/overview", authMiddleware, getDashboardOverviewController);
+router.get("/overview", getDashboardOverviewController);
 
 export default router;

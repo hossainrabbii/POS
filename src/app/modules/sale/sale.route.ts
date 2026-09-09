@@ -13,32 +13,38 @@ import {
 const router = Router();
 
 // ======================================================
+// ALL PRODUCT ROUTES REQUIRE VALID ACCESS TOKEN
+// ======================================================
+
+router.use(authMiddleware);
+// ======================================================
 // CREATE SALE
 // ======================================================
 
-router.post("/", authMiddleware, createSaleController);
+router.post("/", createSaleController);
 
 // ======================================================
 // RECEIVE DUE PAYMENT
 // ======================================================
 
-router.post("/:saleId/payment", authMiddleware, addSalePaymentController);
+router.post("/:saleId/payment", addSalePaymentController);
 
 // ======================================================
 // GET ALL SALES
 // ======================================================
 
-router.get("/", authMiddleware, getAllSalesController);
+router.get("/", getAllSalesController);
 
 // ======================================================
 // GET SALES STATISTICS
 // ======================================================
 
-router.get("/statistics", authMiddleware, getSalesStatisticsController);
+router.get("/statistics", getSalesStatisticsController);
 
 // ======================================================
 // GET SINGLE SALE
 // ======================================================
 
-router.get("/:saleId", authMiddleware, getSaleByIdController);
+router.get("/:saleId", getSaleByIdController);
+
 export default router;

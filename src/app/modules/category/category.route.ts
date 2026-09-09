@@ -12,8 +12,9 @@ import {
 
 const router = Router();
 
-// Every category route requires
-// a valid access token.
+// ======================================================
+// ALL PRODUCT ROUTES REQUIRE VALID ACCESS TOKEN
+// ======================================================
 
 router.use(authMiddleware);
 
