@@ -1,18 +1,20 @@
 import express from "express";
+import cors from "cors";
+
 import globalErrorHandler from "./app/middlewares/globalErrorHandler.js";
 import router from "./app/routes/index.js";
-import cors from 'cors';
+
 const app = express();
 
 app.use(express.json());
 
-// Enable CORS for your Next.js frontend
 app.use(
   cors({
-    origin: 'http://localhost:3000',
-    credentials: true, // Required for cookies/tokens if passed via headers/credentials
-  })
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    credentials: true,
+  }),
 );
+
 app.use("/api/v1", router);
 
 app.get("/", (req, res) => {

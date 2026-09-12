@@ -5,6 +5,7 @@ import productRoutes from "../modules/product/product.route.js";
 import saleRoutes from "../modules/sale/sale.route.js";
 import dashboardRoutes from "../modules/dashboard/dashboard.route.js";
 import userRoutes from "../modules/user/user.route.js";
+import shopRoutes from "../modules/shop/shop.route.js";
 const router = Router();
 const moduleRoutes = [
   {
@@ -30,6 +31,10 @@ const moduleRoutes = [
   {
     path: "/user",
     route: userRoutes,
+  },
+  {
+    path: "/shop",
+    route: shopRoutes,
   },
 ];
 

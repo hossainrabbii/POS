@@ -7,15 +7,34 @@ const PORT = appConfig.port || 5000;
 
 const connectToDatabase = async () => {
   try {
-    await mongoose.connect(appConfig.mongo_db_uri as string);
-    console.log("🛢 Database connected successfully");
-    app.listen(PORT, () => {
-      console.log(`🚀 Server is running on port ${PORT}`);
-    });
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(appConfig.mongo_db_uri as string);
+      console.log("🛢 Database connected successfully");
+    }
+
+    return true;
   } catch (error) {
     console.error("❌ Database connection failed:", error);
-    process.exit(1);
+    throw error;
   }
 };
 
-connectToDatabase();
+// Local development
+if (process.env.NODE_ENV !== "production") {
+  connectToDatabase()
+    .then(() => {
+      app.listen(PORT, () => {
+        console.log(`🚀 Server is running on port ${PORT}`);
+      });
+    })
+    .catch(() => {
+      process.exit(1);
+    });
+}
+
+// Vercel/serverless
+export default async function handler(req: any, res: any) {
+  await connectToDatabase();
+
+  return app(req, res);
+}
