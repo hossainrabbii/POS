@@ -161,23 +161,68 @@ export const registerUser = async (payload: IRegisterPayload) => {
 
   await sendEmail({
     to: email,
-
-    subject: "Verify your POS account",
-
-    text:
-      `Your verification code is ${otp}. ` +
-      `This code will expire in 10 minutes.`,
+    subject: "Verify Your POS Account",
+    text: `Your verification code is ${otp}. This code will expire in 10 minutes. If you didn't create an account, please ignore this email.`,
 
     html: `
-      <h2>Verify your POS account</h2>
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Verify Your Account</title>
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f3f4f6; padding: 40px 0;">
+            <tr>
+              <td align="center">
+                <table role="presentation" width="100%" max-width="480px" cellspacing="0" cellpadding="0" style="max-width: 480px; background-color: #ffffff; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); overflow: hidden;">
+                  
+                  <!-- Header Branding -->
+                  <tr>
+                    <td style="padding: 32px 32px 24px 32px; text-align: center; border-bottom: 1px solid #f3f4f6;">
+                      <h2 style="margin: 0; color: #111827; font-size: 20px; font-weight: 700; letter-spacing: -0.025em;">POS System</h2>
+                    </td>
+                  </tr>
 
-      <p>Your verification code is:</p>
+                  <!-- Main Content -->
+                  <tr>
+                    <td style="padding: 32px; text-align: center;">
+                      <h3 style="margin: 0 0 12px 0; color: #1f2937; font-size: 18px; font-weight: 600;">Verify Your Account</h3>
+                      <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 14px; line-height: 20px;">
+                        Thank you for registering. Please use the verification code below to activate your account:
+                      </p>
 
-      <h1>${otp}</h1>
+                      <!-- OTP Box -->
+                      <div style="margin: 0 auto 24px auto; padding: 16px 24px; background-color: #f9fafb; border: 1px dashed #d1d5db; border-radius: 6px; display: inline-block;">
+                        <span style="font-family: monospace; font-size: 32px; font-weight: 700; letter-spacing: 6px; color: #111827;">${otp}</span>
+                      </div>
 
-      <p>
-        This code will expire in 10 minutes.
-      </p>
+                      <!-- Expiry Warning -->
+                      <p style="margin: 0 0 8px 0; color: #9ca3af; font-size: 12px; line-height: 16px;">
+                        This code will expire in <strong style="color: #6b7280;">10 minutes</strong>.
+                      </p>
+                      <p style="margin: 0; color: #9ca3af; font-size: 12px; line-height: 16px;">
+                        If you didn't request this, you can safely ignore this email.
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Footer -->
+                  <tr>
+                    <td style="padding: 20px 32px; background-color: #f9fafb; text-align: center; border-top: 1px solid #f3f4f6;">
+                      <p style="margin: 0; color: #9ca3af; font-size: 11px;">
+                        &copy; ${new Date().getFullYear()} POS System. All rights reserved.
+                      </p>
+                    </td>
+                  </tr>
+
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+      </html>
     `,
   });
 
@@ -448,19 +493,69 @@ export const forgotPassword = async (email: string) => {
 
   await sendEmail({
     to: email,
-    subject: "POS password reset code",
-    text:
-      `Your password reset code is ${otp}. ` +
-      `This code will expire in 10 minutes.`,
+    subject: "Password Reset Request - POS System",
+    text: `Your password reset code is ${otp}. This code will expire in 10 minutes. If you didn't request this, please ignore this email.`,
 
     html: `
-        <h2>Password Reset</h2>
-        <p>Your password reset code is:</p>
-        <h1>${otp}</h1>
-        <p>
-          This code will expire in 10 minutes.
-        </p>
-      `,
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Password Reset</title>
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f3f4f6; padding: 40px 0;">
+            <tr>
+              <td align="center">
+                <table role="presentation" width="100%" max-width="480px" cellspacing="0" cellpadding="0" style="max-width: 480px; background-color: #ffffff; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); overflow: hidden;">
+                  
+                  <!-- Header Branding -->
+                  <tr>
+                    <td style="padding: 32px 32px 24px 32px; text-align: center; border-bottom: 1px solid #f3f4f6;">
+                      <h2 style="margin: 0; color: #111827; font-size: 20px; font-weight: 700; letter-spacing: -0.025em;">POS System</h2>
+                    </td>
+                  </tr>
+
+                  <!-- Main Content -->
+                  <tr>
+                    <td style="padding: 32px; text-align: center;">
+                      <h3 style="margin: 0 0 12px 0; color: #1f2937; font-size: 18px; font-weight: 600;">Password Reset Request</h3>
+                      <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 14px; line-height: 20px;">
+                        We received a request to reset your password. Use the verification code below to proceed:
+                      </p>
+
+                      <!-- OTP Box -->
+                      <div style="margin: 0 auto 24px auto; padding: 16px 24px; background-color: #f9fafb; border: 1px dashed #d1d5db; border-radius: 6px; display: inline-block;">
+                        <span style="font-family: monospace; font-size: 32px; font-weight: 700; letter-spacing: 6px; color: #111827;">${otp}</span>
+                      </div>
+
+                      <!-- Expiry Warning -->
+                      <p style="margin: 0 0 8px 0; color: #9ca3af; font-size: 12px; line-height: 16px;">
+                        This code will expire in <strong style="color: #6b7280;">10 minutes</strong>.
+                      </p>
+                      <p style="margin: 0; color: #9ca3af; font-size: 12px; line-height: 16px;">
+                        If you didn't request this, you can safely ignore this email.
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Footer -->
+                  <tr>
+                    <td style="padding: 20px 32px; background-color: #f9fafb; text-align: center; border-top: 1px solid #f3f4f6;">
+                      <p style="margin: 0; color: #9ca3af; font-size: 11px;">
+                        &copy; ${new Date().getFullYear()} POS System. All rights reserved.
+                      </p>
+                    </td>
+                  </tr>
+
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+      </html>
+    `,
   });
 
   return {
